@@ -4,14 +4,20 @@ import json
 # -------------------------------
 # Load data
 # -------------------------------
-gl_df = pd.read_excel("sap_gl_extract.xlsx")
+gl_df = pd.read_excel("GL Extract Jan to July 2025.xlsx")
 map_df = pd.read_excel("analytic_accounts_mapping.xlsx")
+def clean_number(val):
+    try:
+        return str(int(float(val)))
+    except (ValueError, TypeError):
+        return ""
 
 # Create mapping dict
 analytic_map = dict(zip(map_df['Analytic Account'].astype(str), map_df['ID'].astype(str)))
 
 # Normalize fields
-gl_df['Document Number'] = gl_df['Document Number'].astype(str)
+# gl_df['Document Number'] = gl_df['Document Number'].astype(str)
+gl_df["Document Number"] = gl_df["Document Number"].apply(clean_number)
 gl_df["Amount in doc. curr."] = pd.to_numeric(gl_df["Amount in doc. curr."], errors='coerce').fillna(0)
 gl_df["Amount in local currency"] = pd.to_numeric(gl_df["Amount in local currency"], errors='coerce').fillna(0)
 
@@ -25,7 +31,9 @@ for doc_number, group in grouped:
     first = group.iloc[0]
     reference = doc_number
     company = first.get("Company Code", "")
-    date = pd.to_datetime(first.get("Document Date")).strftime('%Y-%m-%d')
+    # date = pd.to_datetime(first.get("Document Date")).strftime('%Y-%m-%d')
+    raw_date = pd.to_datetime(first.get("Document Date"), errors='coerce')
+    date = raw_date.strftime('%Y-%m-%d') if pd.notna(raw_date) else ""
     journal = "Miscellaneous Operations"
     number = ""
     partner = ""
@@ -46,7 +54,7 @@ for doc_number, group in grouped:
 
         # Use Vendor Name directly
         vendor_name = row.get("Vendor Name", "")
-        vendor_name = str(vendor_name).strip() if pd.notna(vendor_name) else ""
+        vendor = str(vendor_name).strip() if pd.notna(vendor_name) else ""
 
         # Analytic mapping
         analytic_dict = {}
@@ -65,13 +73,13 @@ for doc_number, group in grouped:
             "Date": date,
             "Journal": journal,
             "Number": number,
-            "Partner": partner,
+            # "Partner": partner,
             "Status": status,
             "Total Signed": signed_total,
             "Journal Items/Account": account,
             "Journal Items/Label": label,
             "Journal Items/Amount in Currency": amount_doc,
-            "Journal Items/Partner": vendor_name,
+            "Journal Items/Partner": vendor,
             "Journal Items/Currency": row.get("Document currency", "UGX"),
             "Journal Items/Debit": debit,
             "Journal Items/Credit": credit,
@@ -85,5 +93,5 @@ for doc_number, group in grouped:
 # Export
 # -------------------------------
 final_df = pd.DataFrame(output_rows)
-final_df.to_excel("odoo_journal_import_with_vendor_names.xlsx", index=False)
+final_df.to_excel("odoo_journal_import.xlsx", index=False)
 print("✅ Done: Exported using Vendor Name directly.")

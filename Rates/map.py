@@ -2,8 +2,8 @@ import pandas as pd
 from datetime import datetime
 
 # ─────── 1. Input/output ─────────────────────────────────────
-INPUT_FILE = "sap_rates.xlsx"
-OUTPUT_FILE = "odoo_currency_rates1.xlsx"
+INPUT_FILE = "1_normalized.xlsx"
+OUTPUT_FILE = "odoo_currency_rates.xlsx"
 
 CURRENCY_META = {
     "AED": ("base.AED", "AED"),
