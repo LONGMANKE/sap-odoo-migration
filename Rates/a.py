@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 
 # === Settings ===
-INPUT_FILE  = "sap_rates.xlsx"          # <-- change to your source file
+INPUT_FILE  = "sap_rates_template.xlsx"          # <-- change to your source file
 OUTPUT_FILE = "sap_rates_normalized.xlsx"   # <-- output with fixed headers
 
 # === Step 1: Load the Excel file ===
